@@ -1,4 +1,5 @@
 .venv
+.env
 *.pyc
 .token
 __pycache__
