@@ -1,13 +1,16 @@
 from discord.ext import commands
 
 class Ping(commands.Cog):
-  def __init__(self, app):
-    self.app = app
+    def __init__(self, bot):
+        self.bot = bot
 
-  @commands.Cog.listener()
-  async def on_ready(self):
-    pass
+    @commands.Cog.listener()
+    async def on_ready(self):
+        pass
 
-  @commands.command()
-  async def ping(self, ctx):
-    await ctx.send('Pong!')
+    @commands.command()
+    async def ping(self, ctx):
+        await ctx.send('Pong!')
+
+def setup(bot):
+    bot.add_cog(Ping(bot))
