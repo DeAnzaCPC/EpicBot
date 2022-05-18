@@ -11,5 +11,9 @@ class App:
     self.discord_token = discord_token
     register(self)
 
+    extension = ['StartUp']
+    for ext in extension:
+        self.bot.load_extension(ext)
+
   def run(self):
     self.bot.run(self.discord_token)
