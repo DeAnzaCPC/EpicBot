@@ -1,8 +1,8 @@
 from discord.ext import commands
 
 class Ping(commands.Cog):
-  def __init__(self, bot):
-    self.bot = bot
+  def __init__(self, app):
+    self.app = app
 
   @commands.Cog.listener()
   async def on_ready(self):

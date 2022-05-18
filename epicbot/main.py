@@ -1,7 +1,5 @@
-from discord.ext import commands
 import os
-from cog import register
+from app import App
 
-bot = commands.Bot(command_prefix = "!")
-register(bot)
-bot.run(os.getenv("BOT_TOKEN"))
+App(os.getenv("BOT_TOKEN")).run()
+

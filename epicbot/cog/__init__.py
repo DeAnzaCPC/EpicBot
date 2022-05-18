@@ -1,6 +1,7 @@
 from .ping import Ping
-cogs = [Ping]
+from .battle import Battle
+cogs = [Ping, Battle]
 
-def register(bot):
+def register(app):
   for cls in cogs:
-    bot.add_cog(cls(bot))
+    app.bot.add_cog(cls(app))
