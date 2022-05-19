@@ -24,12 +24,27 @@ class Battle(commands.Cog):
     async def confirm(self, ctx, handle: str):
         pid = self.battles[handle]
         opp = self.opps[handle]
-        winner = self.bot.oj.get_winner(handle, opp, pid)
+        winner = self.decide_winner(handle, opp, pid)
         if winner is None:
             await ctx.send("No winner yet")
         else:
             await ctx.send("Winner is " + winner + "! They solved it first!")
 
+    def decide_winner(self, handle1, handle2, pid):
+        submits1 = self.bot.oj.fetch_submissions(handle1, pid)
+        submits2 = self.bot.oj.fetch_submissions(handle2, pid)
+        handles = [handle1, handle2]
+        combined_ac = []
+        for s in submits1:
+            if s.is_ac:
+                combined_ac.append((s.ts, 0))
+        for s in submits2:
+            if s.is_ac:
+                combined_ac.append((s.ts, 1))
+        if len(combined_ac) == 0:
+            return None
+        combined_ac = sorted(combined_ac)
+        return handles[combined_ac[0][1]]
 
 def setup(bot):
     bot.add_cog(Battle(bot))

@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod
+from collections import namedtuple
 
+Submission = namedtuple('Submission', ['timestamp', 'is_ac', 'url'])
 
 class BaseOJ(metaclass=ABCMeta):
     @abstractmethod
@@ -7,7 +9,7 @@ class BaseOJ(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_winner(self, handle1, handle2, pid):
+    def fetch_submissions(self, handle, pid):
         pass
 
     @abstractmethod
