@@ -31,14 +31,14 @@ class AtcodeOJ(BaseOJ):
         pid_to_idx = {}
 
         def parse_contet_from_id(id):
-            return re.findall(r'(.*?)_[^_]+', id)[0]
+            return re.findall(r'(.*)_+', id)[0]
 
         for id, problem in req_json.items():
             if 'difficulty' in problem:
                 res = {}
                 res['difficulty'] = problem['difficulty']
                 res['id'] = id
-                contest = parse_contet_from_id(id)
+                contest = parse_contet_from_id(id).replace('_','-')
                 res['contest'] = contest
                 res['url'] = 'https://atcoder.jp/contests/{}/tasks/{}'.format(
                     contest, id)
