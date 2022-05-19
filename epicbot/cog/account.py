@@ -1,7 +1,8 @@
-from discord.ext import commands
-import requests
 import re
+import requests
 from bs4 import BeautifulSoup
+from discord.ext import commands
+from tinydb import TinyDB, Query
 
 ATCODER_USER_BASE_URL = "https://atcoder.jp/users/"
 
@@ -9,6 +10,8 @@ ATCODER_USER_BASE_URL = "https://atcoder.jp/users/"
 class Account(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.q = Query()
+        self.db = TinyDB('json/Account.json')
 
     @commands.command()
     async def link(self, ctx, dis_u="", at_id=""):
