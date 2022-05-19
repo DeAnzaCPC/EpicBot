@@ -37,10 +37,10 @@ class Battle(commands.Cog):
         combined_ac = []
         for s in submits1:
             if s.is_ac:
-                combined_ac.append((s.ts, 0))
+                combined_ac.append((s.timestamp, 0))
         for s in submits2:
             if s.is_ac:
-                combined_ac.append((s.ts, 1))
+                combined_ac.append((s.timestamp, 1))
         if len(combined_ac) == 0:
             return None
         combined_ac = sorted(combined_ac)
