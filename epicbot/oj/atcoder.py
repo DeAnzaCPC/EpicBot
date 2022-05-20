@@ -39,39 +39,37 @@ class AtcoderOJ(BaseOJ):
 
         end = r
         select = random.randint(start, end)
+        print(self.problems[select]['id'], self.problems[select]['difficulty'])
         return self.problems[select]['id']
 
     def select_problem(self, handle1, handle2):
         return self.get_problem(0, 300)
 
     def get_url(self, pid):
-        return self.problems[self.pid_to_idx[pid]]['url']
+        idx = self.pid_to_idx[pid]
+        return self.problems[idx]['url']
 
     def _fetch_problems(self):
-        data = json.load(open('problem-models.json'))
-        parsed = []
+        data = json.load(open('json/problem-models.json'))
         pid_to_idx = {}
 
         def parse_contest_from_id(p_id):
             return re.findall(r'(.*)_+', p_id)[0]
 
         for id, problem in data.items():
-            if 'difficulty' in problem:
-                if problem['is_experimental']:
-                    continue
-                res = {}
-                res['difficulty'] = problem['difficulty']
-                res['id'] = id
-                contest = parse_contest_from_id(id).replace('_', '-')
-                res['contest'] = contest
-                res['url'] = 'https://atcoder.jp/contests/{}/tasks/{}'.format(
-                    contest, id)
-                pid_to_idx[id] = len(parsed)
-                parsed.append(res)
+            if ('difficulty' not in problem) or problem['is_experimental']:
+                continue
+            contest = parse_contest_from_id(id).replace('_', '-')
+            res = {'difficulty': problem['difficulty'], 'id': id, 'contest': contest}
+            res['url'] = 'https://atcoder.jp/contests/{}/tasks/{}'.format(
+                contest, id)
+            self.problems.append(res)
 
-        self.problems = parsed
-        self.pid_to_idx = pid_to_idx
         self.problems.sort(key=lambda p: p['difficulty'])
+        for i in range(len(self.problems)):
+            pid_to_idx[self.problems[i]['id']] = i
+        self.pid_to_idx = pid_to_idx
+
 
     def fetch_submissions(self, handle, pid):
         res = []
