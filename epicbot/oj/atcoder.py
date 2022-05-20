@@ -57,6 +57,8 @@ class AtcoderOJ(BaseOJ):
 
         for id, problem in data.items():
             if 'difficulty' in problem:
+                if problem['is_experimental']:
+                    continue
                 res = {}
                 res['difficulty'] = problem['difficulty']
                 res['id'] = id
