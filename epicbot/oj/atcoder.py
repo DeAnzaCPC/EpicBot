@@ -3,10 +3,9 @@ import requests
 import re
 from bs4 import BeautifulSoup
 from datetime import datetime
-from random import randint
+import random
 import json
 
-# ATCODER_PROBLEM_LIST_URL = "https://kenkoooo.com/atcoder/resources/problem-models.json"
 ATCODER_SUBMISSION_URL = "https://atcoder.jp/contests/{}/submissions?f.Task={}&f.LanguageName=&f.Status=&f.User={}"
 ATCODER_MAX_RATING = 200
 
@@ -17,15 +16,12 @@ class AtcoderOJ(BaseOJ):
         self.pid_to_idx = {}
         self._fetch_problems()
 
-    def select_problem(self, handle1, handle2):
-        return _get_problem()
-
-    def _get_problem(rating = 0, delta = 300) -> str:
+    def get_problem(self, rating: int, delta: int) -> str:
         l = -1
-        r = len(ls) - 1
+        r = len(self.problems) - 1
         while r - l > 1:
             m = (l + r) // 2
-            if ls[m].diff >= (rating - delta):
+            if self.problems[m]['difficulty'] >= (rating - delta):
                 r = m
             else:
                 l = m
@@ -33,10 +29,10 @@ class AtcoderOJ(BaseOJ):
         start = r
 
         l = -1
-        r = len(ls) -1
+        r = len(self.problems) - 1
         while r - l > 1:
             m = (l + r) // 2
-            if ls[m].diff >= (rating + delta):
+            if self.problems[m]['difficulty'] >= (rating + delta):
                 r = m
             else:
                 l = m
@@ -44,6 +40,9 @@ class AtcoderOJ(BaseOJ):
         end = r
         select = random.randint(start, end)
         return self.problems[select]['id']
+
+    def select_problem(self, handle1, handle2):
+        return self.get_problem(0, 300)
 
     def get_url(self, pid):
         return self.problems[self.pid_to_idx[pid]]['url']
@@ -53,15 +52,15 @@ class AtcoderOJ(BaseOJ):
         parsed = []
         pid_to_idx = {}
 
-        def parse_contest_from_id(id):
-            return re.findall(r'(.*)_+', id)[0]
+        def parse_contest_from_id(p_id):
+            return re.findall(r'(.*)_+', p_id)[0]
 
         for id, problem in data.items():
             if 'difficulty' in problem:
                 res = {}
                 res['difficulty'] = problem['difficulty']
                 res['id'] = id
-                contest = parse_contest_from_id(id).replace('_','-')
+                contest = parse_contest_from_id(id).replace('_', '-')
                 res['contest'] = contest
                 res['url'] = 'https://atcoder.jp/contests/{}/tasks/{}'.format(
                     contest, id)
