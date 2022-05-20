@@ -83,7 +83,9 @@ class Battle(commands.Cog):
 
     @tasks.loop(seconds=2.0)
     async def process_battle_batch(self):
-        for battle_id, battle in self.battles.items():
+        battle_id_list = self.battles.keys()
+        for battle_id in battle_id_list:
+            battle = self.battles[battle_id]
             users = battle['users']
             [handle1, handle2] = self.returnAtCoderID(users)
             pid = battle['pid']
@@ -105,7 +107,9 @@ class Battle(commands.Cog):
                 # notify new submissions
                 continue
             winner = users[new_ac[0][1]]
+            self._delete_battle(battle_id)
             print(winner)
+
             
 
 def setup(bot):
