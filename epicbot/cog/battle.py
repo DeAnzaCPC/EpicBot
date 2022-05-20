@@ -1,5 +1,8 @@
 from discord.ext import commands
 from discord.ext import tasks
+from tinydb import TinyDB, Query
+import re
+
 
 class Battle(commands.Cog):
     def __init__(self, bot):
@@ -7,12 +10,33 @@ class Battle(commands.Cog):
         self.battles = {}
         self.opps = {}
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        pass
+    @staticmethod
+    def returnAtCoderID(id_list):
+        res = []
+        q = Query()
+        db = TinyDB('json/account.json')
+        for item in id_list:
+            if not re.match(r"<@(\d{18})>", item):
+                return -1  # -1: not discord tag
+            s = db.search(q.discordID == item[2:-1])
+            if not s:
+                return 0  # 0: discord id not found in database
+            else:
+                res.append(s[0]['atcoderID'])
+        return res
 
     @commands.command()
     async def battle(self, ctx, handle1: str, handle2: str):
+
+        res = self.returnAtCoderID([handle1, handle2])
+        if res == -1:
+            await ctx.send("Invalid input! Please follow this format: `!battle [discord-ping 1] [discord-ping 2]`")
+            return
+        elif res == 0:
+            await ctx.send("User AtCoder ID not found in database!")
+            return
+
+        [handle1, handle2] = res
         pid = self.bot.oj.select_problem(handle1, handle2)
         self.battles[handle1] = pid
         self.battles[handle2] = pid
@@ -45,6 +69,7 @@ class Battle(commands.Cog):
             return None
         combined_ac = sorted(combined_ac)
         return handles[combined_ac[0][1]]
+
 
 def setup(bot):
     bot.add_cog(Battle(bot))

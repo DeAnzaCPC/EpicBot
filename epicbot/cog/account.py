@@ -11,7 +11,7 @@ class Account(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.q = Query()
-        self.db = TinyDB('json/Account.json')
+        self.db = TinyDB('json/account.json')
 
     @commands.command()
     async def link(self, ctx, dis_u="", at_id=""):
@@ -23,8 +23,15 @@ class Account(commands.Cog):
             await ctx.send("Invalid input! Please follow this format: `!link [discord-ping] [AtCoder ID]`")
             return
 
-        # TODO: Add commands to link accounts and save to database
-        await ctx.send("User accounts linked successfully!")
+        r = self.updateDatabase(dis_u[2:-1], at_id)  # 0 - error, 1 - updated, 2 - added
+        if r == 0:
+            await ctx.send("User accounts already saved in database!")
+            return
+        if r == 1:
+            await ctx.send("User accounts updated successfully!")
+        else:
+            await ctx.send("User accounts linked successfully!")
+        await ctx.send(f"{dis_u} - AtCoder ID: {at_id}")
 
     @staticmethod
     def checkAtCoderID(at_id):
@@ -43,6 +50,17 @@ class Account(commands.Cog):
         if not user:
             return False
         return True
+
+    def updateDatabase(self, dis_u="", at_id=""):
+        s = self.db.search(self.q.discordID == dis_u)  # existing discord ID
+        if s:
+            if s[0]['atcoderID'] == at_id:  # only 1 max entry for each discord ID
+                return 0
+            self.db.update({'atcoderID': at_id}, self.q.discordID == dis_u)
+            return 1
+
+        self.db.insert({'discordID': dis_u, 'atcoderID': at_id})
+        return 2
 
 
 def setup(bot):
