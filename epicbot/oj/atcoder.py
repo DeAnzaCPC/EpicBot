@@ -4,8 +4,9 @@ import re
 from bs4 import BeautifulSoup
 from datetime import datetime
 from random import randint
+import json
 
-ATCODER_PROBLEM_LIST_URL = "https://kenkoooo.com/atcoder/resources/problem-models.json"
+# ATCODER_PROBLEM_LIST_URL = "https://kenkoooo.com/atcoder/resources/problem-models.json"
 ATCODER_SUBMISSION_URL = "https://atcoder.jp/contests/{}/submissions?f.Task={}&f.LanguageName=&f.Status=&f.User={}"
 ATCODER_MAX_RATING = 200
 
@@ -17,23 +18,45 @@ class AtcoderOJ(BaseOJ):
         self._fetch_problems()
 
     def select_problem(self, handle1, handle2):
-        filtered = [p for p in self.problems if p['difficulty']
-                    < ATCODER_MAX_RATING]
-        return filtered[randint(0, len(filtered)-1)]['id']
+        return _get_problem()
+
+    def _get_problem(rating = 0, delta = 300) -> str:
+        l = -1
+        r = len(ls) - 1
+        while r - l > 1:
+            m = (l + r) // 2
+            if ls[m].diff >= (rating - delta):
+                r = m
+            else:
+                l = m
+
+        start = r
+
+        l = -1
+        r = len(ls) -1
+        while r - l > 1:
+            m = (l + r) // 2
+            if ls[m].diff >= (rating + delta):
+                r = m
+            else:
+                l = m
+
+        end = r
+        select = random.randint(start, end)
+        return self.problems[select]['id']
 
     def get_url(self, pid):
         return self.problems[self.pid_to_idx[pid]]['url']
 
     def _fetch_problems(self):
-        req = requests.get(ATCODER_PROBLEM_LIST_URL)
-        req_json = req.json()
+        data = json.load(open('problem-models.json'))
         parsed = []
         pid_to_idx = {}
 
         def parse_contest_from_id(id):
             return re.findall(r'(.*)_+', id)[0]
 
-        for id, problem in req_json.items():
+        for id, problem in data.items():
             if 'difficulty' in problem:
                 res = {}
                 res['difficulty'] = problem['difficulty']
@@ -47,6 +70,7 @@ class AtcoderOJ(BaseOJ):
 
         self.problems = parsed
         self.pid_to_idx = pid_to_idx
+        self.problems.sort(key=lambda p: p['difficulty'])
 
     def fetch_submissions(self, handle, pid):
         res = []
