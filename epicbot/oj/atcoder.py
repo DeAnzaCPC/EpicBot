@@ -10,7 +10,7 @@ ATCODER_SUBMISSION_URL = "https://atcoder.jp/contests/{}/submissions?f.Task={}&f
 ATCODER_MAX_RATING = 200
 
 
-class AtcodeOJ(BaseOJ):
+class AtcoderOJ(BaseOJ):
     def __init__(self):
         self.problems = []
         self.pid_to_idx = {}
@@ -30,7 +30,7 @@ class AtcodeOJ(BaseOJ):
         parsed = []
         pid_to_idx = {}
 
-        def parse_contet_from_id(id):
+        def parse_contest_from_id(id):
             return re.findall(r'(.*)_+', id)[0]
 
         for id, problem in req_json.items():
@@ -38,7 +38,7 @@ class AtcodeOJ(BaseOJ):
                 res = {}
                 res['difficulty'] = problem['difficulty']
                 res['id'] = id
-                contest = parse_contet_from_id(id).replace('_','-')
+                contest = parse_contest_from_id(id).replace('_','-')
                 res['contest'] = contest
                 res['url'] = 'https://atcoder.jp/contests/{}/tasks/{}'.format(
                     contest, id)

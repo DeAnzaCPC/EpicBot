@@ -1,1 +1,1 @@
-from .atcoder import AtcodeOJ
+from .atcoder import AtcoderOJ

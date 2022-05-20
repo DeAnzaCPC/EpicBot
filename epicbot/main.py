@@ -1,13 +1,13 @@
 from dotenv import load_dotenv
 import os
 from discord.ext import commands
-from oj import AtcodeOJ
+from oj import AtcoderOJ
 from db import Database
 
 
 def run(discord_token):
     bot = commands.Bot(command_prefix="!")
-    bot.oj = AtcodeOJ()
+    bot.oj = AtcoderOJ()
     bot.db = Database()
 
     extension = ['battle', 'ping', 'start_up', 'account']
