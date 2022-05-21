@@ -3,11 +3,12 @@ import requests
 import re
 from bs4 import BeautifulSoup
 from datetime import datetime
-from random import randint
+import random
+import json
+import time
 
 ATCODER_PROBLEM_LIST_URL = "https://kenkoooo.com/atcoder/resources/problem-models.json"
 ATCODER_SUBMISSION_URL = "https://atcoder.jp/contests/{}/submissions?f.Task={}&f.LanguageName=&f.Status=&f.User={}"
-ATCODER_MAX_RATING = 200
 
 
 class AtcoderOJ(BaseOJ):
@@ -16,36 +17,75 @@ class AtcoderOJ(BaseOJ):
         self.pid_to_idx = {}
         self._fetch_problems()
 
+    def get_problem(self, rating: int, delta: int) -> str:
+        l = -1
+        r = len(self.problems) - 1
+        while r - l > 1:
+            m = (l + r) // 2
+            if self.problems[m]['difficulty'] >= (rating - delta):
+                r = m
+            else:
+                l = m
+
+        start = r
+
+        l = -1
+        r = len(self.problems) - 1
+        while r - l > 1:
+            m = (l + r) // 2
+            if self.problems[m]['difficulty'] >= (rating + delta):
+                r = m
+            else:
+                l = m
+
+        end = r
+        select = random.randint(start, end)
+        print('Fight!')
+        print(self.problems[select]['id'], self.problems[select]['difficulty'])
+        return self.problems[select]['id']
+
     def select_problem(self, handle1, handle2):
-        filtered = [p for p in self.problems if p['difficulty']
-                    < ATCODER_MAX_RATING]
-        return filtered[randint(0, len(filtered)-1)]['id']
+        return self.get_problem(0, 200)
 
     def get_url(self, pid):
-        return self.problems[self.pid_to_idx[pid]]['url']
+        idx = self.pid_to_idx[pid]
+        return self.problems[idx]['url']
+
+    # def _fetch_json(self):
+    #     req = requests.get(ATCODER_PROBLEM_LIST_URL)
+    #     req_json = req.json()
+    #     with open('json/problem-models.json', 'w', encoding='utf-8') as f:
+    #         json.dump(req_json, f, ensure_ascii=False, indent=4)
 
     def _fetch_problems(self):
-        req = requests.get(ATCODER_PROBLEM_LIST_URL)
-        req_json = req.json()
-        parsed = []
+        # try:
+        #     f = open('json/problem-models.json')
+        #     update = open('json/last-updated.txt')
+        # except FileNotFoundError:
+        #     with open('json/last-updated.txt', 'w') as update_time_f:
+        #         update_time_f.write(time.time())
+        #     self._fetch_json()
+
+        f = open('json/problem-models.json')
+        data = json.load(f)
         pid_to_idx = {}
 
-        def parse_contest_from_id(id):
-            return re.findall(r'(.*)_+', id)[0]
+        def parse_contest_from_id(p_id):
+            return re.findall(r'(.*)_+', p_id)[0]
 
-        for id, problem in req_json.items():
-            if 'difficulty' in problem:
-                res = {}
-                res['difficulty'] = problem['difficulty']
-                res['id'] = id
-                contest = parse_contest_from_id(id).replace('_','-')
-                res['contest'] = contest
-                res['url'] = 'https://atcoder.jp/contests/{}/tasks/{}'.format(
-                    contest, id)
-                pid_to_idx[id] = len(parsed)
-                parsed.append(res)
+        for pid, problem in data.items():
+            if ('difficulty' not in problem) or problem['is_experimental']:
+                continue
+            contest = parse_contest_from_id(pid).replace('_', '-')
+            res = {'difficulty': problem['difficulty'],
+                   'id': pid,
+                   'contest': contest,
+                   'url': 'https://atcoder.jp/contests/{}/tasks/{}'.format(contest, pid)}
+            self.problems.append(res)
 
-        self.problems = parsed
+        self.problems.sort(key=lambda p: p['difficulty'])
+        for i in range(len(self.problems)):
+            pid_to_idx[self.problems[i]['id']] = i
         self.pid_to_idx = pid_to_idx
 
     def fetch_submissions(self, handle, pid):
@@ -64,6 +104,7 @@ class AtcoderOJ(BaseOJ):
                 date = datetime.strptime(cell[0].text, '%Y-%m-%d %H:%M:%S%z')
                 ts = date.timestamp()
                 is_ac = cell[6].text == 'AC'
-                url = 'https://atcoder.jp' + cell[9].select_one('a').attrs['href']
+                url = 'https://atcoder.jp' + \
+                    cell[9].select_one('a').attrs['href']
                 res.append(Submission(int(ts), is_ac, url))
         return res
